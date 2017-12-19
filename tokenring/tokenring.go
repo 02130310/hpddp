@@ -97,6 +97,7 @@ func routine (my_id int, d time.Duration, routines int, wg *sync.WaitGroup) {
     if !held_token_timer.Stop() {
 	    <-held_token_timer.C
     }
+    // node #0 will be the leader
     next_token_timer := time.NewTimer(0) // for when we wait for the token
     if !next_token_timer.Stop() {
 	    <-next_token_timer.C
@@ -106,7 +107,9 @@ func routine (my_id int, d time.Duration, routines int, wg *sync.WaitGroup) {
         select {
         case buf := <-data_channel:
             held_token_timer.Reset(d)
-            next_token_timer.Stop()
+            if my_id == 0 {
+                next_token_timer.Stop()
+            }
             err := json.Unmarshal(buf, &token)
             is_ok(err)
 
@@ -174,7 +177,7 @@ func routine (my_id int, d time.Duration, routines int, wg *sync.WaitGroup) {
                 fmt.Printf("sending token to node %v\n", (my_id + 1) % routines)
                 send_token(&prepared_token, my_id, (my_id + 1) % routines)
             }
-            next_token_timer.Reset((d) * time.Duration(routines * 2))
+            next_token_timer.Reset((d) * time.Duration(routines))
         case <-held_token_timer.C:
             // send token
             fmt.Printf("node %v: recv token from %v", my_id, token.From)
@@ -195,7 +198,9 @@ func routine (my_id int, d time.Duration, routines int, wg *sync.WaitGroup) {
             } else {
                 send_token(&prepared_token, my_id, (my_id + 1) % routines)
             }
-            next_token_timer.Reset((d) * time.Duration(routines * 2))
+            if my_id == 0 {
+                next_token_timer.Reset((d) * time.Duration(routines))
+            }
         }
     }
 }
