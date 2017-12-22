@@ -63,7 +63,7 @@ func routine (my_id int, nodes int, base_port int, ttl int, t time.Duration,
               g *graph.Graph) {
     var seen_confirmations = make(map[int]bool)
     seen_message := false
-    var confirmations_left = nodes // for node 0
+    var confirmations_left = nodes - 1 // for node 0
     var msg_id = my_id * 100000
 
     node, _ := g.GetNode(my_id)
@@ -100,7 +100,7 @@ func routine (my_id int, nodes int, base_port int, ttl int, t time.Duration,
                 m.Sender = my_id
                 m.Id = msg_id
                 msg_id += 1
-                go gossip(&m, g, my_id, m.Origin, base_port, ttl, t)
+                gossip(&m, g, my_id, m.Origin, base_port, ttl, t)
                 if (my_id == 0) && (confirmations_left == 0) {
                     fmt.Printf("%v\n",
                                float64(time.Since(start).Nanoseconds()) /
@@ -115,10 +115,10 @@ func routine (my_id int, nodes int, base_port int, ttl int, t time.Duration,
                 m.Sender = my_id
                 m.Id = msg_id
                 msg_id += 1
-                go gossip(&m, g, my_id, m.Origin, base_port, ttl, t)
+                gossip(&m, g, my_id, m.Origin, base_port, ttl, t)
                 var my_confirmation = Message { msg_id, "notification", my_id, my_id, ""}
                 msg_id += 1
-                go gossip(&my_confirmation, g, my_id, m.Origin, base_port, ttl, t)
+                gossip(&my_confirmation, g, my_id, m.Origin, base_port, ttl, t)
             }
         }
     }

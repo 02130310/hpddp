@@ -5,7 +5,7 @@ y = m(:, 2)
 hold on;
 grid on;
 plot(x, y, 'o-r');
-set(gca,'XTick',0:10:100)
+set(gca,'XTick',0:10:90)
 xlabel("percentage dropped")
 ylabel("time")
 print -djpg image.jpg
